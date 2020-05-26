@@ -1,4 +1,4 @@
-alias ls='ls -AGF'
+[ -f /usr/local/etc/bash_completion ] && . /usr/local/etc/bash_completion
 
 RESET="\[\033[0m\]"
 RED="\[\033[0;31m\]"

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+dotfiles_dir=~/dotfiles
+dotfiles_bak=~/dotfiles_bak
+files="bash/.bashrc bash/.bash_profile"
+
+echo "Creating $dotfiles_bak for backup of existing dotfiles in ~"
+mkdir -p $dotfiles_bak
+
+cd $dotfiles_dir
+
+for file in $files; do
+  echo "Symlinking $file to homedir (backing up old file, if any)"
+  mv ~/$file ~/$dotfiles_bak
+  ln -s $dotfiles_dir/$file ~/$file
+done
