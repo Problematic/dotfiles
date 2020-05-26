@@ -1,3 +1,5 @@
+alias ls='ls -AGF'
+
 RESET="\[\033[0m\]"
 RED="\[\033[0;31m\]"
 GREEN="\[\033[01;32m\]"
