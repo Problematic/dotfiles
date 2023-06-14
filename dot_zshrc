@@ -34,7 +34,7 @@ ZSH_THEME="powerlevel10k/powerlevel10k"
 # HYPHEN_INSENSITIVE="true"
 
 # Uncomment the following line to disable bi-weekly auto-update checks.
-# DISABLE_AUTO_UPDATE="true"
+DISABLE_AUTO_UPDATE="true"
 
 # Uncomment the following line to automatically update without prompting.
 # DISABLE_UPDATE_PROMPT="true"
@@ -88,19 +88,20 @@ bindkey '^ ' autosuggest-accept
 # Custom plugins may be added to $ZSH_CUSTOM/plugins/
 # Example format: plugins=(rails git textmate ruby lighthouse)
 # Add wisely, as too many plugins slow down shell startup.
-plugins=(vscode git kubectl nvm zsh-autosuggestions zsh-syntax-highlighting)
+plugins=(
+	vscode
+	git
+	kubectl
+	nvm
+	zsh-autosuggestions
+	zsh-syntax-highlighting
+)
 
 source $ZSH/oh-my-zsh.sh
 
 # User configuration
 
 export BYOBU_PREFIX="/usr/local"
-
-export JAVA_HOME="/Library/Java/JavaVirtualMachines/temurin-8.jdk/Contents/Home"
-export ANDROID_HOME="/Users/derekst/Library/Android/sdk"
-export ANDROID_SDK_ROOT="/Users/derekst/Library/Android/sdk"
-
-export PATH="$PATH:$ANDROID_HOME/tools:$ANDROID_HOME/tools/bin:$ANDROID_HOME/platform-tools"
 
 # export MANPATH="/usr/local/man:$MANPATH"
 
@@ -126,14 +127,6 @@ fi
 # alias zshconfig="mate ~/.zshrc"
 # alias ohmyzsh="mate ~/.oh-my-zsh"
 export PATH="/usr/local/opt/python@3.7/libexec/bin:$PATH"
-
-# The next line updates PATH for the Google Cloud SDK.
-if [ -f '/Users/derekst/google-cloud-sdk/path.zsh.inc' ]; then . '/Users/derekst/google-cloud-sdk/path.zsh.inc'; fi
-
-# The next line enables shell command completion for gcloud.
-if [ -f '/Users/derekst/google-cloud-sdk/completion.zsh.inc' ]; then . '/Users/derekst/google-cloud-sdk/completion.zsh.inc'; fi
-
-[ -s "/Users/derekst/.jabba/jabba.sh" ] && source "/Users/derekst/.jabba/jabba.sh"
 
 # zprof
 
