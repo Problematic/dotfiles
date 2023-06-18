@@ -80,6 +80,7 @@ DISABLE_AUTO_UPDATE="true"
 zstyle ':omz:plugins:nvm' lazy yes
 
 ZSH_AUTOSUGGEST_BUFFER_MAX_SIZE=20
+ZSH_HIGHLIGHT_DIRS_BLACKLIST+=(/mnt/*)
 
 bindkey '^ ' autosuggest-accept
 
@@ -94,7 +95,7 @@ plugins=(
 	kubectl
 	nvm
 	zsh-autosuggestions
-	zsh-syntax-highlighting
+#	zsh-syntax-highlighting
 )
 
 source $ZSH/oh-my-zsh.sh
