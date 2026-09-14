@@ -1,0 +1,27 @@
+#!/bin/sh
+# Launcher for VS Code from WSL. Dispatches:
+#   1. inside a VS Code integrated terminal -> the session's remote-cli (fast,
+#      talks over VSCODE_IPC_HOOK_CLI and reuses the current window)
+#   2. otherwise -> the Windows user-install launcher, which hands off to the
+#      Remote-WSL extension and opens this distro remotely
+#
+# Needed because ~/.local/bin is prepended in .zshrc and would otherwise shadow
+# the remote-cli that VS Code injects into integrated-terminal PATH.
+
+# 1. in-session CLI (newest server build wins; paths are commit hashes, no spaces)
+if [ -n "$VSCODE_IPC_HOOK_CLI" ]; then
+  remote=$(ls -t "$HOME"/.vscode-server/bin/*/bin/remote-cli/code 2>/dev/null | head -1)
+  [ -n "$remote" ] && [ -x "$remote" ] && exec "$remote" "$@"
+fi
+
+# 2. Windows user install (the script realpath()s $0, so location here is fine)
+win_code="/mnt/c/Users/djsto/AppData/Local/Programs/Microsoft VS Code/bin/code"
+[ -x "$win_code" ] && exec "$win_code" "$@"
+
+# fallback: user renamed on Windows, or a different profile
+for win_code in "/mnt/c/Users"/*/"AppData/Local/Programs/Microsoft VS Code/bin/code"; do
+  [ -x "$win_code" ] && exec "$win_code" "$@"
+done
+
+echo "code: no VS Code launcher found (looked in \$HOME/.vscode-server and /mnt/c/Users/*)" >&2
+exit 127

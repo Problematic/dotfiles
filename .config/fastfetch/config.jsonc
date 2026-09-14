@@ -1,0 +1,57 @@
+{
+  "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+
+  "logo": {
+    "source": "arch",
+    "padding": { "top": 1, "left": 2, "right": 4 }
+  },
+
+  "display": {
+    "separator": "  ",
+    "key": { "width": 12 },
+    "color": { "keys": "blue", "title": "cyan" },
+    "percent": { "type": ["bar", "num"] },
+    "bar": {
+      "char": { "elapsed": "━", "total": "─" },
+      "border": { "left": "[", "right": "]" },
+      "width": 12
+    },
+    "size": { "ndigits": 1 }
+  },
+
+  "modules": [
+    { "type": "title", "format": "{#1;36}{user-name}{#90}@{#1;36}{host-name}" },
+    "separator",
+
+    { "type": "custom", "format": "{#90}╭── {#1;34}  System" },
+    { "type": "os",       "key": "{#90}│{#blue} 󰃃 OS" },
+    { "type": "kernel",   "key": "{#90}│{#blue} 󰌜 Kernel", "format": "{release}" },
+    { "type": "uptime",   "key": "{#90}│{#blue} 󰔛 Uptime" },
+    { "type": "packages", "key": "{#90}│{#blue} 󰏖 Packages" },
+    { "type": "shell",    "key": "{#90}│{#blue} 󰞷 Shell" },
+    "break",
+
+    { "type": "custom", "format": "{#90}╭── {#1;35}  Desktop" },
+    { "type": "de",       "key": "{#90}│{#magenta} 󰧨 DE" },
+    { "type": "wm",       "key": "{#90}│{#magenta} 󰖯 WM" },
+    { "type": "theme",    "key": "{#90}│{#magenta} 󰉼 Theme" },
+    { "type": "icons",    "key": "{#90}│{#magenta} 󰀻 Icons" },
+    { "type": "cursor",   "key": "{#90}│{#magenta} 󰇀 Cursor" },
+    { "type": "terminal", "key": "{#90}│{#magenta}  Term" },
+    { "type": "display",  "key": "{#90}│{#magenta} 󰍹 Display" },
+    "break",
+
+    { "type": "custom", "format": "{#90}╭── {#1;33} 󰢮 Hardware" },
+    { "type": "host",    "key": "{#90}│{#yellow} 󰌢 Host", "format": "{name}" },
+    { "type": "cpu",     "key": "{#90}│{#yellow} 󰻠 CPU", "showPeCoreCount": true },
+    { "type": "gpu",     "key": "{#90}│{#yellow} 󰢮 GPU", "hideType": "integrated" },
+    { "type": "memory",  "key": "{#90}│{#yellow} 󰑭 RAM" },
+    { "type": "swap",    "key": "{#90}│{#yellow} 󰓡 Swap" },
+    { "type": "disk",    "key": "{#90}│{#yellow} 󰋊 Disk", "folders": "/" },
+    { "type": "battery", "key": "{#90}│{#yellow} 󰂄 Battery" },
+    { "type": "localip", "key": "{#90}│{#yellow} 󰩟 Net", "showIpv4": true, "showPrefixLen": false },
+    "break",
+
+    { "type": "colors", "paddingLeft": 2, "symbol": "circle" }
+  ]
+}

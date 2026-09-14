@@ -1,0 +1,13 @@
+[Unit]
+Description=Re-point PipeWire default sink when an audio card is removed (undocking)
+After=pipewire.service wireplumber.service
+Wants=pipewire.service
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/dock-audio-fallback
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# sudo-askpass.sh -- SUDO_ASKPASS helper that shows you WHAT you are authorizing.
+#
+#   export SUDO_ASKPASS="$HOME/.local/bin/sudo-askpass"
+#   sudo -A <command>
+#
+# sudo's own prompt does not include the command (-p has no escape for it), and a
+# prompt supplied by the caller would only be as trustworthy as the caller. So
+# this reads the real argv straight out of /proc for the sudo process that
+# spawned it. What you see is what sudo actually received.
+#
+# LIMITATION, so you calibrate trust correctly: this shows the command sudo was
+# invoked WITH, not what that command goes on to do. `sudo -A bash foo.sh`
+# displays exactly that -- it says nothing about what is inside foo.sh. This is a
+# transparency tool, not a policy engine. Reviewing the script still matters.
+
+set -uo pipefail
+
+PROMPT="${1:-Password:}"
+MAXLEN=1600
+
+# --- find the sudo process that forked us -------------------------------
+# Results go in globals, NOT through a temp file: a predictable path in
+# world-writable /tmp is a symlink-attack surface, and it is unnecessary here.
+CMD=""
+CWD="?"
+
+find_sudo_cmd() {
+  local pid=$PPID depth=0 argv=()
+  while (( depth++ < 6 )) && [[ -r /proc/$pid/cmdline ]]; do
+    mapfile -d '' -t argv < "/proc/$pid/cmdline" 2>/dev/null || break
+    if [[ -n ${argv[0]:-} && ${argv[0]##*/} == sudo ]]; then
+      CMD=$(printf '%q ' "${argv[@]}")
+      return 0
+    fi
+    pid=$(awk '/^PPid:/{print $2}' "/proc/$pid/status" 2>/dev/null) || break
+    [[ -n $pid && $pid != 0 ]] || break
+  done
+  return 1
+}
+
+find_sudo_cmd || CMD="(could not determine -- treat with suspicion)"
+
+# The cwd comes from THIS process, not from sudo's. sudo is setuid root, so
+# /proc/<sudo-pid>/cwd is owned by root and unreadable to us -- reading it there
+# always failed and always rendered "?". sudo forks the askpass helper as the
+# invoking user before it escalates, so we inherit the caller's cwd directly.
+CWD=$(readlink -e /proc/self/cwd 2>/dev/null) || CWD="?"
+
+# Trim absurdly long command lines so the dialog stays readable.
+if (( ${#CMD} > MAXLEN )); then
+  CMD="${CMD:0:$MAXLEN}  …[truncated, ${#CMD} chars total]"
+fi
+
+MESSAGE="A process is requesting ROOT privileges.
+
+COMMAND:
+  $CMD
+
+Working directory: $CWD
+Requested by uid $(id -u) ($(id -un))
+
+$PROMPT"
+
+# --- display ------------------------------------------------------------
+# zenity first, by preference. Like kdialog it has NO kwallet integration, so
+# your sudo password is never offered up for storage.
+#
+# NOTE: zenity --password has no --text option -- check `zenity --help-password`,
+# it takes only --password and --username. Passing --text there is silently
+# ignored, so --password CANNOT show the command. --entry --hide-text does
+# accept --text and still masks input, so that is what we use.
+#
+# --no-markup is not optional. zenity renders --text as Pango markup by
+# default, so a command containing <b>, <span> or a bare & would be mangled --
+# or could hide part of itself from the very dialog meant to disclose it.
+# Correct disclosure beats prettiness; it also rules out a monospace <tt> command.
+if command -v zenity >/dev/null 2>&1; then
+  exec zenity --entry --hide-text --no-markup \
+              --title="Authorize root command" \
+              --width=640 \
+              --text="$MESSAGE" 2>/dev/null
+
+elif command -v kdialog >/dev/null 2>&1; then
+  exec kdialog --title "Authorize root command" --password "$MESSAGE"
+
+elif command -v ksshaskpass >/dev/null 2>&1; then
+  # Fallback. Works, but ksshaskpass talks to kwallet and may offer to REMEMBER
+  # the password. Decline that -- you do not want your sudo password in kwallet.
+  exec ksshaskpass "$MESSAGE"
+
+else
+  echo "no graphical askpass available (install zenity)" >&2
+  exit 1
+fi

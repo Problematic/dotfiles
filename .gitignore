@@ -1,0 +1,15 @@
+.cfg
+
+# ~/.ssh is deny-by-default: nothing in it is trackable, so a stray
+# `config add` can not pick up a private key.
+.ssh/*
+
+# never track: gh writes oauth_token here when no keyring is available
+.config/gh/hosts.yml
+# Claude Code session state, not configuration
+.claude.json
+
+# ~/.claude is deny-by-default: credentials, transcripts and prompt history
+# live here. Only explicitly-allowed preference files are trackable.
+.claude/*
+!.claude/settings.json

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Recreates the unversioned pieces of this dotfiles setup on a fresh machine.
+# Run after checking out the bare repo (https://github.com/Problematic/dotfiles).
+set -euo pipefail
+
+if [ ! -d "$HOME/.oh-my-zsh" ]; then
+  echo ">> Installing oh-my-zsh"
+  RUNZSH=no KEEP_ZSHRC=yes sh -c \
+    "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+else
+  echo ">> oh-my-zsh already installed"
+fi
+
+ZSH_CUSTOM="${ZSH_CUSTOM:-$HOME/.oh-my-zsh/custom}"
+if [ ! -d "$ZSH_CUSTOM/plugins/zsh-autosuggestions" ]; then
+  echo ">> Installing zsh-autosuggestions"
+  git clone https://github.com/zsh-users/zsh-autosuggestions \
+    "$ZSH_CUSTOM/plugins/zsh-autosuggestions"
+else
+  echo ">> zsh-autosuggestions already installed"
+fi
+
+# tmux plugins (tpm) are auto-installed by oh-my-tmux into
+# ~/.local/share/tmux/plugins on first launch; nvim plugins are
+# auto-installed by lazy.nvim (pinned via lazy-lock.json) on first run.
+echo ">> Done. Start tmux and nvim once to let their plugin managers sync."

@@ -1,0 +1,27 @@
+#!/bin/sh
+# Environment-aware xdg-open. First on PATH, so it dispatches:
+#   1. SSH session   -> print a Ctrl+clickable OSC 8 link (terminal's host opens it)
+#   2. WSL           -> wslview (opens Windows browser)
+#   3. local desktop -> the real system xdg-open
+#
+# SSH is tested first on purpose: this host is WSL and so has wslview installed,
+# and opening a browser on *this* machine's Windows side does nothing for
+# someone SSH'd in from elsewhere. Checking wslview first made the OSC 8 branch
+# unreachable here.
+if [ -n "$SSH_CONNECTION" ] || [ -n "$SSH_TTY" ]; then
+  :  # fall through to the OSC 8 link below
+elif command -v wslview >/dev/null 2>&1; then
+  exec wslview "$@"
+else
+  # local desktop: hand off to the real xdg-open if it's installed
+  for real in /usr/bin/xdg-open /bin/xdg-open; do
+    [ -x "$real" ] && exec "$real" "$@"
+  done
+fi
+# SSH (or no real xdg-open): print a Ctrl+clickable OSC 8 link
+url=$1
+case $url in
+  *://*|mailto:*) : ;;
+  *) url="file://$(realpath "$url" 2>/dev/null || printf %s "$url")" ;;
+esac
+printf '\033]8;;%s\033\\\033[4;34m%s\033[0m\033]8;;\033\\\n' "$url" "$url"

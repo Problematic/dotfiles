@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Re-point the PipeWire default sink when an ALSA card disappears (e.g. undocking).
+# PipeWire leaves the removed card's node in the graph as an error node, and the
+# default sink keeps pointing at it, so audio goes nowhere. This only changes the
+# default sink -- it never restarts PipeWire, so it is safe while a game is running.
+
+log() { printf '%s %s\n' "$(date '+%H:%M:%S')" "$*"; }
+
+sink_exists() { pactl list short sinks 2>/dev/null | awk '{print $2}' | grep -qxF "$1"; }
+
+pick_fallback() {
+  local sinks
+  sinks=$(pactl list short sinks 2>/dev/null | awk '{print $2}')
+  [ -z "$sinks" ] && return 1
+  # prefer built-in speakers, then any non-HDMI sink, then whatever is first
+  grep -m1 'Speaker'  <<<"$sinks" && return 0
+  grep -m1 -v 'HDMI'  <<<"$sinks" && return 0
+  head -n1            <<<"$sinks"
+}
+
+reconcile() {
+  local cur new
+  cur=$(pactl get-default-sink 2>/dev/null)
+  [ -z "$cur" ] && return
+  if sink_exists "$cur"; then
+    return                      # default is still real, nothing to do
+  fi
+  new=$(pick_fallback) || { log "no sinks available; leaving default alone"; return; }
+  if pactl set-default-sink "$new" 2>/dev/null; then
+    log "default sink was gone ($cur) -> switched to $new"
+  else
+    log "failed to switch default sink to $new"
+  fi
+}
+
+log "watching for ALSA card removals"
+reconcile                       # reconcile once at startup
+
+udevadm monitor --udev --subsystem-match=sound 2>/dev/null | while read -r line; do
+  case "$line" in
+    *remove*) sleep 1.5; reconcile ;;
+  esac
+done

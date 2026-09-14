@@ -1,0 +1,6 @@
+[tools]
+go = "latest"
+node = "lts"
+
+[settings]
+go_set_gobin = false
